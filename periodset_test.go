@@ -1750,3 +1750,142 @@ func TestPeriodSet_Equal(t *testing.T) {
 		})
 	}
 }
+
+func TestPeriodSet_Iter(t *testing.T) {
+	s1 := EmptySet[time.Time]().Add(
+		NewPeriod(
+			time.Date(2023, time.December, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 2, 0, 0, 0, 0, time.UTC),
+		),
+		NewPeriod(
+			time.Date(2023, time.December, 3, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
+		),
+		NewPeriod(
+			time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
+		),
+		NewPeriod(
+			time.Date(2023, time.December, 7, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 8, 0, 0, 0, 0, time.UTC),
+		),
+		NewPeriod(
+			time.Date(2023, time.December, 9, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 10, 0, 0, 0, 0, time.UTC),
+		),
+		NewPeriod(
+			time.Date(2023, time.December, 11, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 12, 0, 0, 0, 0, time.UTC),
+		),
+	)
+
+	s2 := EmptySet[time.Time]()
+
+	s1.Iter(func(i Interval[time.Time]) bool {
+		s2.Add(i)
+		return true
+	})
+
+	if !s1.Equal(s2) {
+		t.Errorf("expected both sets to be equal, s1 %+v, s2 %+v", s1, s2)
+	}
+
+	s3 := EmptySet[time.Time]()
+	e3 := genExpectedPeriodSet([]Interval[time.Time]{
+		NewPeriod(
+			time.Date(2023, time.December, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 2, 0, 0, 0, 0, time.UTC),
+		),
+		NewPeriod(
+			time.Date(2023, time.December, 3, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
+		),
+	})
+
+	c := 0
+	s1.Iter(func(i Interval[time.Time]) bool {
+		s3.Add(i)
+		c++
+
+		return c < 2
+	})
+
+	if !s3.Equal(e3) {
+		t.Errorf("expected both sets to be equal, s3 %+v, e3 %+v", s3, e3)
+	}
+}
+
+func TestPeriodSet_IterBetween(t *testing.T) {
+	s1 := EmptySet[time.Time]().Add(
+		NewPeriod(
+			time.Date(2023, time.December, 1, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
+		),
+		NewPeriod(
+			time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
+		),
+		NewPeriod(
+			time.Date(2023, time.December, 7, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 10, 0, 0, 0, 0, time.UTC),
+		),
+		NewPeriod(
+			time.Date(2023, time.December, 11, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 12, 0, 0, 0, 0, time.UTC),
+		),
+	)
+
+	p2 := NewPeriod(
+		time.Date(2023, time.December, 3, 0, 0, 0, 0, time.UTC),
+		time.Date(2023, time.December, 9, 0, 0, 0, 0, time.UTC),
+	)
+
+	s2 := EmptySet[time.Time]()
+	e2 := genExpectedPeriodSet([]Interval[time.Time]{
+		NewPeriod(
+			time.Date(2023, time.December, 3, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
+		),
+		NewPeriod(
+			time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
+		),
+		NewPeriod(
+			time.Date(2023, time.December, 7, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 9, 0, 0, 0, 0, time.UTC),
+		),
+	})
+
+	s1.IterBetween(p2, func(i Interval[time.Time]) bool {
+		s2.Add(i)
+		return true
+	})
+
+	if !s2.Equal(e2) {
+		t.Errorf("expected both sets to be equal, got %+v, want %+v", s2, e2)
+	}
+
+	s3 := EmptySet[time.Time]()
+	e3 := genExpectedPeriodSet([]Interval[time.Time]{
+		NewPeriod(
+			time.Date(2023, time.December, 3, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
+		),
+		NewPeriod(
+			time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+			time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
+		),
+	})
+
+	c := 0
+	s1.IterBetween(p2, func(i Interval[time.Time]) bool {
+		s3.Add(i)
+		c++
+
+		return c < 2
+	})
+
+	if !s3.Equal(e3) {
+		t.Errorf("expected both sets to be equal, s3 %+v, e3 %+v", s3, e3)
+	}
+}

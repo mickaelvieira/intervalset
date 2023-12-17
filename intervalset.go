@@ -270,6 +270,34 @@ func (p *IntervalSet[T]) Difference(q *IntervalSet[T]) *IntervalSet[T] {
 		Sub(q.intervals...)
 }
 
+// Iter iterates over the set and pass intervals to the anonymous function.
+// It stops when the function returns false or when there are no more intervals to consume.
+func (p *IntervalSet[T]) Iter(f func(Interval[T]) bool) {
+	for _, i := range p.intervals {
+		if !f(i) {
+			break
+		}
+	}
+}
+
+// IterBetween iterates over the set between the given interval.
+// Each interval is truncated to fit within q and pass intervals to the anonymous function.
+// It stops when the function returns false or when there are no more intervals to consume.
+func (p *IntervalSet[T]) IterBetween(q Interval[T], f func(Interval[T]) bool) {
+	l, h := p.rangeOfOverlap(q)
+
+	for _, v := range p.intervals[l:h] {
+		i := v.Intersect(q)
+		if i.IsZero() {
+			continue
+		}
+
+		if !f(i) {
+			break
+		}
+	}
+}
+
 // rangeOfOverlap returns the range to obtain a slice of intervals overlapping the given interval:
 // - the lower limit is the index of the first interval that ends during or after the given interval
 // - the higher limit is the index of the first interval that starts after the given interval

@@ -1052,3 +1052,89 @@ func TestRangeSet_Equal(t *testing.T) {
 		})
 	}
 }
+
+func TestRangeSet_Iter(t *testing.T) {
+	s1 := EmptySet[int]().Add(
+		NewRange[int](1, 2),
+		NewRange[int](3, 4),
+		NewRange[int](5, 6),
+		NewRange[int](7, 8),
+		NewRange[int](9, 10),
+		NewRange[int](11, 12),
+	)
+
+	s2 := EmptySet[int]()
+
+	s1.Iter(func(i Interval[int]) bool {
+		s2.Add(i)
+		return true
+	})
+
+	if !s1.Equal(s2) {
+		t.Errorf("expected both sets to be equal, s1 %+v, s2 %+v", s1, s2)
+	}
+
+	s3 := EmptySet[int]()
+	e3 := genExpectedRangeSet([]Interval[int]{
+		NewRange[int](1, 2),
+		NewRange[int](3, 4),
+		NewRange[int](5, 6),
+	})
+
+	c := 0
+	s1.Iter(func(i Interval[int]) bool {
+		s3.Add(i)
+		c++
+
+		return c < 3
+	})
+
+	if !s3.Equal(e3) {
+		t.Errorf("expected both sets to be equal, s3 %+v, e3 %+v", s3, e3)
+	}
+}
+
+func TestRangeSet_IterBetween(t *testing.T) {
+	s1 := EmptySet[int]().Add(
+		NewRange[int](1, 4),
+		NewRange[int](5, 6),
+		NewRange[int](7, 10),
+		NewRange[int](11, 12),
+	)
+
+	p2 := NewRange[int](3, 9)
+
+	s2 := EmptySet[int]()
+	e2 := genExpectedRangeSet([]Interval[int]{
+		NewRange[int](3, 4),
+		NewRange[int](5, 6),
+		NewRange[int](7, 9),
+	})
+
+	s1.IterBetween(p2, func(i Interval[int]) bool {
+		s2.Add(i)
+		return true
+	})
+
+	if !s2.Equal(e2) {
+		t.Errorf("expected both sets to be equal, got %+v, want %+v", s2, e2)
+	}
+
+	s3 := EmptySet[int]()
+	e3 := genExpectedRangeSet([]Interval[int]{
+		NewRange[int](3, 4),
+		NewRange[int](5, 6),
+	})
+
+	c := 0
+	s1.IterBetween(p2, func(i Interval[int]) bool {
+		s3.Add(i)
+		c++
+
+		return c < 2
+	})
+
+	if !s3.Equal(e3) {
+		t.Errorf("expected both sets to be equal, s3 %+v, e3 %+v", s3, e3)
+	}
+}
