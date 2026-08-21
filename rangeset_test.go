@@ -271,19 +271,19 @@ func TestRangeSet_IsEmpty(t *testing.T) {
 	set := EmptySet[int]()
 
 	if !set.IsEmpty() {
-		t.Errorf("the set should be empty")
+		t.Error("the set should be empty")
 	}
 
 	set.Add(NewRange[int](5, 6))
 
 	if set.IsEmpty() {
-		t.Errorf("the set should not be empty")
+		t.Error("the set should not be empty")
 	}
 
 	set.Sub(NewRange[int](5, 6))
 
 	if !set.IsEmpty() {
-		t.Errorf("the set should be empty")
+		t.Error("the set should be empty")
 	}
 }
 
@@ -1360,11 +1360,11 @@ func TestRangeSet_IsSupersetOfOrientation(t *testing.T) {
 	s := EmptySet[int]().Add(NewRange[int](4, 6))
 
 	if !p.IsSupersetOf(s) {
-		t.Errorf("the wider set should be a superset of the narrower one, got false")
+		t.Error("the wider set should be a superset of the narrower one, got false")
 	}
 
 	if s.IsSupersetOf(p) {
-		t.Errorf("the narrower set should not be a superset of the wider one, got true")
+		t.Error("the narrower set should not be a superset of the wider one, got true")
 	}
 }
 

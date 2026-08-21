@@ -452,7 +452,7 @@ func TestPeriodSet_IsEmpty(t *testing.T) {
 	set := EmptySet[time.Time]()
 
 	if !set.IsEmpty() {
-		t.Errorf("the set should be empty")
+		t.Error("the set should be empty")
 	}
 
 	set.Add(NewPeriod(
@@ -461,7 +461,7 @@ func TestPeriodSet_IsEmpty(t *testing.T) {
 	))
 
 	if set.IsEmpty() {
-		t.Errorf("the set should not be empty")
+		t.Error("the set should not be empty")
 	}
 
 	set.Sub(NewPeriod(
@@ -470,7 +470,7 @@ func TestPeriodSet_IsEmpty(t *testing.T) {
 	))
 
 	if !set.IsEmpty() {
-		t.Errorf("the set should be empty")
+		t.Error("the set should be empty")
 	}
 }
 

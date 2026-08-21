@@ -57,7 +57,7 @@ type Interval[T any] interface {
 	Encompass(Interval[T]) Interval[T]
 
 	// Punch cuts the given interval out of the interval and returns the remaining intervals.
-	Punch(Interval[T]) (Interval[T], Interval[T])
+	Punch(Interval[T]) (left, right Interval[T])
 
 	// IsZero reports whether both limits are zero values
 	IsZero() bool
@@ -348,25 +348,25 @@ func (p *IntervalSet[T]) IterBetween(q Interval[T], f func(Interval[T]) bool) {
 //
 // |   |
 // | T |---------------------------------->
-// |   |   l     l+1    l+2    l+3     h
+// |   |  low   low+1  low+2  low+3  high
 // | P | -----  -----  -----  -----  -----
 // | Q |    ---------------------
 // |   |
-func (p *IntervalSet[T]) rangeOfOverlap(q Interval[T]) (int, int) {
+func (p *IntervalSet[T]) rangeOfOverlap(q Interval[T]) (low, high int) {
 	// an invalid interval overlaps nothing: its limits being out of order,
 	// the lower limit would otherwise be searched past the higher one.
 	if !q.IsValid() {
 		return 0, 0
 	}
 
-	l := sort.Search(len(p.intervals), func(i int) bool {
+	low = sort.Search(len(p.intervals), func(i int) bool {
 		return !p.intervals[i].Before(q)
 	})
-	h := sort.Search(len(p.intervals), func(i int) bool {
+	high = sort.Search(len(p.intervals), func(i int) bool {
 		return p.intervals[i].After(q)
 	})
 
-	return l, h
+	return low, high
 }
 
 // Union returns a new set that is the union of the sets.

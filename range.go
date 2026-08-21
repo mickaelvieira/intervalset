@@ -114,7 +114,7 @@ func (p Range[T]) Encompass(q Interval[T]) Interval[T] {
 }
 
 // Punch cuts q out of p and returns the remaining ranges.
-func (p Range[T]) Punch(q Interval[T]) (Interval[T], Interval[T]) {
+func (p Range[T]) Punch(q Interval[T]) (left, right Interval[T]) {
 	i := p.Intersect(q)
 	if i.IsZero() {
 		if p.Before(q) {
@@ -123,16 +123,16 @@ func (p Range[T]) Punch(q Interval[T]) (Interval[T], Interval[T]) {
 		return Range[T]{}, p
 	}
 
-	l := Range[T]{}
-	r := Range[T]{}
+	left = Range[T]{}
+	right = Range[T]{}
 
 	if p.lower != i.Min() {
-		l = Range[T]{lower: p.lower, upper: i.Min()}
+		left = Range[T]{lower: p.lower, upper: i.Min()}
 	}
 
 	if i.Max() != p.upper {
-		r = Range[T]{lower: i.Max(), upper: p.upper}
+		right = Range[T]{lower: i.Max(), upper: p.upper}
 	}
 
-	return l, r
+	return left, right
 }

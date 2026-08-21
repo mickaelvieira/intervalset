@@ -29,7 +29,7 @@ func TestMin(t *testing.T) {
 func TestMaxEmpty(t *testing.T) {
 	got := Max()
 	expected := time.Time{}
-	if got != expected {
+	if !got.Equal(expected) {
 		t.Errorf("time should be equal, expected %+v got %+v", got, expected)
 	}
 }
@@ -41,7 +41,7 @@ func TestMax(t *testing.T) {
 
 	got := Max(t1, t2, t3)
 
-	if got != t2 {
+	if !got.Equal(t2) {
 		t.Errorf("time should be equal, expected %+v got %+v", got, t2)
 	}
 }
