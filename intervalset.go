@@ -340,39 +340,21 @@ func Union[T any](sets ...*IntervalSet[T]) *IntervalSet[T] {
 }
 
 // Intersection returns a new set that is the intersection of the sets.
+// It returns an empty set when called without any set.
 func Intersection[T any](sets ...*IntervalSet[T]) *IntervalSet[T] {
-	a := EmptySet[T]()
+	if len(sets) == 0 {
+		return EmptySet[T]()
+	}
 
-	for i, s := range sets {
-		// no need to go through the intervals of the last set
-		// as it's already been compared against the other sets.
-		if i == len(sets)-1 {
-			continue
+	// start from the first set, then narrow it down with each of the others.
+	a := EmptySet[T]().Add(sets[0].intervals...)
+
+	for _, s := range sets[1:] {
+		n := EmptySet[T]()
+		for _, q := range a.intervals {
+			n.Add(s.Overlaps(q).intervals...)
 		}
-
-		for _, p := range s.intervals {
-			var o *IntervalSet[T]
-			for j, ss := range sets {
-				if j == i {
-					continue
-				}
-
-				if o == nil {
-					o = ss.Overlaps(p)
-					continue
-				}
-
-				ol := make([]*IntervalSet[T], 0)
-				for _, p := range o.intervals {
-					ol = append(ol, ss.Overlaps(p))
-				}
-				o = Union(ol...)
-			}
-
-			if !o.IsEmpty() {
-				a.Add(o.intervals...)
-			}
-		}
+		a = n
 	}
 
 	return a
