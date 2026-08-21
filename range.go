@@ -59,8 +59,15 @@ func (p Range[T]) After(q Interval[T]) bool {
 	return p.lower > q.Max()
 }
 
-// Overlaps reports whether p overlaps q.
-func (p Range[T]) Overlaps(q Interval[T]) bool {
+// Intersects reports whether p and q share at least one value.
+// Adjacent ranges do not intersect, they only touch.
+func (p Range[T]) Intersects(q Interval[T]) bool {
+	return max(p.lower, q.Min()) < min(p.upper, q.Max())
+}
+
+// Touches reports whether p and q share a value or meet at a limit.
+// Adjacent ranges touch, which is what lets a set coalesce them.
+func (p Range[T]) Touches(q Interval[T]) bool {
 	return !p.Before(q) && !p.After(q)
 }
 
@@ -73,10 +80,6 @@ func (p Range[T]) Contains(q Interval[T]) bool {
 // The new range is either a valid and non-empty range (its lower value being
 // strictly lower than its upper value) or a zero value range.
 func (p Range[T]) Intersect(q Interval[T]) Interval[T] {
-	if !p.Overlaps(q) {
-		return Range[T]{}
-	}
-
 	l := max(p.lower, q.Min())
 	u := min(p.upper, q.Max())
 
@@ -91,9 +94,9 @@ func (p Range[T]) Intersect(q Interval[T]) Interval[T] {
 }
 
 // Encompass returns a new range encompassing both ranges.
-// Both ranges must overlap otherwise it returns a zero value range.
+// Both ranges must touch otherwise it returns a zero value range.
 func (p Range[T]) Encompass(q Interval[T]) Interval[T] {
-	if !p.Overlaps(q) {
+	if !p.Touches(q) {
 		return Range[T]{}
 	}
 

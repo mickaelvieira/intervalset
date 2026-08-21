@@ -63,8 +63,18 @@ func (p Period[T]) After(q Interval[T]) bool {
 	return time.Time(p.start).After(time.Time(q.Max()))
 }
 
-// Overlaps reports whether p overlaps q.
-func (p Period[T]) Overlaps(q Interval[T]) bool {
+// Intersects reports whether p and q share at least one instant.
+// Adjacent periods do not intersect, they only touch.
+func (p Period[T]) Intersects(q Interval[T]) bool {
+	s := limit.Max(time.Time(p.start), time.Time(q.Min()))
+	e := limit.Min(time.Time(p.end), time.Time(q.Max()))
+
+	return s.Before(e)
+}
+
+// Touches reports whether p and q share an instant or meet at a limit.
+// Adjacent periods touch, which is what lets a set coalesce them.
+func (p Period[T]) Touches(q Interval[T]) bool {
 	return !p.Before(q) && !p.After(q)
 }
 
@@ -81,10 +91,6 @@ func (p Period[T]) Contains(q Interval[T]) bool {
 // The new period is either a valid and non-empty period (its start date being
 // strictly before its end date) or a zero value period.
 func (p Period[T]) Intersect(q Interval[T]) Interval[T] {
-	if !p.Overlaps(q) {
-		return Period[T]{}
-	}
-
 	s := limit.Max(time.Time(p.start), time.Time(q.Min()))
 	e := limit.Min(time.Time(p.end), time.Time(q.Max()))
 
@@ -99,9 +105,9 @@ func (p Period[T]) Intersect(q Interval[T]) Interval[T] {
 }
 
 // Encompass returns a new period encompassing both periods.
-// Both periods must overlap otherwise it returns a zero value period.
+// Both periods must touch otherwise it returns a zero value period.
 func (p Period[T]) Encompass(q Interval[T]) Interval[T] {
-	if !p.Overlaps(q) {
+	if !p.Touches(q) {
 		return Period[T]{}
 	}
 
