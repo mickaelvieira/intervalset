@@ -1318,3 +1318,32 @@ func TestRangeSet_AddInvalidRangeDoesNotPanic(t *testing.T) {
 		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
 	}
 }
+
+// AsSlice hands the intervals over to the caller, mutating them must not reach
+// back into the set.
+func TestRangeSet_AsSliceDoesNotExposeTheSet(t *testing.T) {
+	/*----------------------------------------------
+	|  T  | 1   2   3   4   5   6   7   8   9   10 |
+	|  S  |     |---|                   |---|      |
+	------------------------------------------------
+	|  R  |     |---|                   |---|      |
+	----------------------------------------------*/
+	set := EmptySet[int]().
+		Add(
+			NewRange[int](2, 3),
+			NewRange[int](7, 8),
+		)
+
+	intervals := set.AsSlice()
+	intervals[0] = NewRange[int](100, 200)
+	intervals[1] = NewRange[int](300, 400)
+
+	expected := genExpectedRangeSet([]Interval[int]{
+		NewRange[int](2, 3),
+		NewRange[int](7, 8),
+	})
+
+	if !set.Equal(expected) {
+		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
+	}
+}

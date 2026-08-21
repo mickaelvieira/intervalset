@@ -1,6 +1,9 @@
 package intervalset
 
-import "sort"
+import (
+	"slices"
+	"sort"
+)
 
 // Interval is an interface that represents an interval within the set.
 type Interval[T any] interface {
@@ -58,9 +61,11 @@ type IntervalSet[T any] struct {
 	intervals []Interval[T]
 }
 
-// AsSlice returns the underlying set of intervals as a slice.
+// AsSlice returns the set of intervals as a slice.
+// The slice is a copy of the set's own: appending to it or replacing
+// its intervals leaves the set untouched.
 func (p *IntervalSet[T]) AsSlice() []Interval[T] {
-	return p.intervals
+	return slices.Clone(p.intervals)
 }
 
 // IsEmpty reports whether the set is empty.
