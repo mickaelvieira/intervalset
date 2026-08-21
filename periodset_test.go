@@ -1084,7 +1084,7 @@ func ExampleIntervalSet_Complement_period() {
 	// 2023-12-08 00:00:00 +0000 UTC - 2023-12-10 00:00:00 +0000 UTC
 }
 
-func TestPeriodSet_IsSubset(t *testing.T) {
+func TestPeriodSet_IsSupersetOf(t *testing.T) {
 	var table = []struct {
 		e  bool
 		s1 *IntervalSet[time.Time]
@@ -1241,7 +1241,7 @@ func TestPeriodSet_IsSubset(t *testing.T) {
 
 	for i, tc := range table {
 		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
-			got := tc.s1.IsSubset(tc.s2)
+			got := tc.s1.IsSupersetOf(tc.s2)
 			if got != tc.e {
 				if tc.e {
 					t.Errorf("expected s2 to be a subset of s1: s1 %+v, s2 %+v", tc.s1, tc.s2)

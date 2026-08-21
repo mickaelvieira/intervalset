@@ -257,8 +257,9 @@ func (p *IntervalSet[T]) Overlaps(q Interval[T]) *IntervalSet[T] {
 	return s
 }
 
-// IsSubset reports whether s is a subset of p.
-func (p *IntervalSet[T]) IsSubset(s *IntervalSet[T]) bool {
+// IsSupersetOf reports whether p covers s, that is whether every interval
+// of s is contained in one of p's intervals.
+func (p *IntervalSet[T]) IsSupersetOf(s *IntervalSet[T]) bool {
 	c := 0
 
 	for _, q := range s.intervals {

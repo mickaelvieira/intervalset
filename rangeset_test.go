@@ -639,7 +639,7 @@ func ExampleIntervalSet_Complement_range() {
 	// 8 - 10
 }
 
-func TestRangeSet_IsSubset(t *testing.T) {
+func TestRangeSet_IsSupersetOf(t *testing.T) {
 	var table = []struct {
 		e  bool
 		s1 *IntervalSet[int]
@@ -733,7 +733,7 @@ func TestRangeSet_IsSubset(t *testing.T) {
 
 	for i, tc := range table {
 		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
-			got := tc.s1.IsSubset(tc.s2)
+			got := tc.s1.IsSupersetOf(tc.s2)
 			if got != tc.e {
 				if tc.e {
 					t.Errorf("expected s2 to be a subset of s1: s1 %+v, s2 %+v", tc.s1, tc.s2)
@@ -1345,5 +1345,25 @@ func TestRangeSet_AsSliceDoesNotExposeTheSet(t *testing.T) {
 
 	if !set.Equal(expected) {
 		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
+	}
+}
+
+// The receiver is the wider set: p.IsSupersetOf(s) asks whether p covers s,
+// not the other way around.
+func TestRangeSet_IsSupersetOfOrientation(t *testing.T) {
+	/*----------------------------------------------
+	|  T  | 1   2   3   4   5   6   7   8   9   10 |
+	| (p) | |-------------------------------|      |
+	| (s) |             |-------|                  |
+	----------------------------------------------*/
+	p := EmptySet[int]().Add(NewRange[int](1, 9))
+	s := EmptySet[int]().Add(NewRange[int](4, 6))
+
+	if !p.IsSupersetOf(s) {
+		t.Errorf("the wider set should be a superset of the narrower one, got false")
+	}
+
+	if s.IsSupersetOf(p) {
+		t.Errorf("the narrower set should not be a superset of the wider one, got true")
 	}
 }
