@@ -933,3 +933,26 @@ func ExamplePeriod_Encompass() {
 	// Output:
 	// 2023-12-03 00:00:00 +0000 UTC - 2023-12-06 00:00:00 +0000 UTC
 }
+
+// An empty period covers no time at all, so intersecting it with another period
+// can only ever be empty.
+func TestPeriod_IntersectEmptyPeriod(t *testing.T) {
+	/*----------------------------------------------
+	|  T  | 1   2   3   4   5   6   7   8   9   10 |
+	| (1) | |                                      |
+	| (2) | |---------------------------|          |
+	------------------------------------------------
+	|  R  |                 ∅                      |
+	----------------------------------------------*/
+	p1 := NewPeriod(time.Time{}, time.Time{})
+	p2 := NewPeriod(
+		time.Time{},
+		time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+	)
+
+	expected := Period[time.Time]{}
+
+	if got := p1.Intersect(p2); !expected.Equal(got) {
+		t.Errorf("both periods should be equal, expected %v, got %v", expected, got)
+	}
+}
