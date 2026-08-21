@@ -106,6 +106,7 @@ func TestRangeSet_OperationsAgainstModel(t *testing.T) {
 		s, ms := genSet()
 
 		assertSetHolds(t, Union(p, q), mp|mq, "Union")
+		assertSetHolds(t, Intersection(p), mp, "Intersection of one set")
 		assertSetHolds(t, Intersection(p, q), mp&mq, "Intersection of two sets")
 		assertSetHolds(t, Intersection(p, q, s), mp&mq&ms, "Intersection of three sets")
 		assertSetHolds(t, p.Difference(q), mp&^mq, "Difference")
