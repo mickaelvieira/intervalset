@@ -78,8 +78,8 @@ func (p Period[T]) Contains(q Interval[T]) bool {
 }
 
 // Intersect returns a new period representing the intersection of both periods.
-// The new period is either a valid and non-empty period (its start date being strictly
-// greater than its end date) or a zero value period.
+// The new period is either a valid and non-empty period (its start date being
+// strictly before its end date) or a zero value period.
 func (p Period[T]) Intersect(q Interval[T]) Interval[T] {
 	if !p.Overlaps(q) {
 		return Period[T]{}

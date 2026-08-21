@@ -70,8 +70,8 @@ func (p Range[T]) Contains(q Interval[T]) bool {
 }
 
 // Intersect returns a new range representing the intersection of both ranges.
-// The new range is either a valid and non-empty range (its lower value being strictly
-// greater than its upper value) or a zero value range.
+// The new range is either a valid and non-empty range (its lower value being
+// strictly lower than its upper value) or a zero value range.
 func (p Range[T]) Intersect(q Interval[T]) Interval[T] {
 	if !p.Overlaps(q) {
 		return Range[T]{}
