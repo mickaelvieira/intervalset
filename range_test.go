@@ -173,7 +173,7 @@ func TestRange_After(t *testing.T) {
 	}
 }
 
-func TestRange_Overlap(t *testing.T) {
+func TestRange_Touches(t *testing.T) {
 	var table = []struct {
 		e  bool
 		i1 Range[int32]
@@ -243,12 +243,12 @@ func TestRange_Overlap(t *testing.T) {
 
 	for i, tc := range table {
 		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
-			got := tc.i1.Overlaps(tc.i2)
+			got := tc.i1.Touches(tc.i2)
 			if got != tc.e {
 				if tc.e {
-					t.Errorf("expected i1 to overlap i2: i1 %+v, i2 %+v, %t", tc.i1, tc.i2, got)
+					t.Errorf("expected i1 to touch i2: i1 %+v, i2 %+v, %t", tc.i1, tc.i2, got)
 				} else {
-					t.Errorf("expected i1 to not overlap i2: i1 %+v, i2 %+v, %t", tc.i1, tc.i2, got)
+					t.Errorf("expected i1 to not touch i2: i1 %+v, i2 %+v, %t", tc.i1, tc.i2, got)
 				}
 			}
 		})
@@ -640,16 +640,98 @@ func ExampleRange_Encompass() {
 	// 3 - 6
 }
 
-// Adjacent ranges meet at a single value and share none: they overlap, which is
-// what lets a set coalesce them, yet their intersection is empty.
-func ExampleRange_Overlaps_adjacent() {
+// Adjacent ranges meet at a single value and share none: they touch, which is
+// what lets a set coalesce them, but they do not intersect.
+func ExampleRange_Touches_adjacent() {
 	a := NewRange[int](0, 5)
 	b := NewRange[int](5, 10)
 
-	fmt.Printf("overlaps: %t\n", a.Overlaps(b))
-	fmt.Printf("intersection is empty: %t\n", a.Intersect(b).IsZero())
+	fmt.Printf("touches: %t\n", a.Touches(b))
+	fmt.Printf("intersects: %t\n", a.Intersects(b))
 
 	// Output:
-	// overlaps: true
-	// intersection is empty: true
+	// touches: true
+	// intersects: false
+}
+
+func TestRange_Intersects(t *testing.T) {
+	var table = []struct {
+		e  bool
+		i1 Range[int32]
+		i2 Range[int32]
+	}{
+		/*----------------------------------------------
+		|  T  | 1   2   3   4   5   6   7   8   9   10 |
+		| (1) |     |-------|                          |
+		| (2) |                 |---|                  |
+		----------------------------------------------*/
+		{
+			false,
+			NewRange[int32](2, 4),
+			NewRange[int32](5, 6),
+		},
+		/*----------------------------------------------
+		|  T  | 1   2   3   4   5   6   7   8   9   10 |
+		| (1) |         |-------|                      |
+		| (2) |                 |---|                  |
+		----------------------------------------------*/
+		{
+			false, // adjacent: they touch but share no value
+			NewRange[int32](3, 5),
+			NewRange[int32](5, 6),
+		},
+		/*----------------------------------------------
+		|  T  | 1   2   3   4   5   6   7   8   9   10 |
+		| (1) |             |-------|                  |
+		| (2) |                 |---|                  |
+		----------------------------------------------*/
+		{
+			true,
+			NewRange[int32](4, 6),
+			NewRange[int32](5, 6),
+		},
+		/*----------------------------------------------
+		|  T  | 1   2   3   4   5   6   7   8   9   10 |
+		| (1) |                 |-------|              |
+		| (2) |                 |---|                  |
+		----------------------------------------------*/
+		{
+			true,
+			NewRange[int32](5, 7),
+			NewRange[int32](5, 6),
+		},
+		/*----------------------------------------------
+		|  T  | 1   2   3   4   5   6   7   8   9   10 |
+		| (1) |                     |-------|          |
+		| (2) |                 |---|                  |
+		----------------------------------------------*/
+		{
+			false, // adjacent: they touch but share no value
+			NewRange[int32](6, 8),
+			NewRange[int32](5, 6),
+		},
+		/*----------------------------------------------
+		|  T  | 1   2   3   4   5   6   7   8   9   10 |
+		| (1) |                         |-------|      |
+		| (2) |                 |---|                  |
+		----------------------------------------------*/
+		{
+			false,
+			NewRange[int32](7, 9),
+			NewRange[int32](5, 6),
+		},
+	}
+
+	for i, tc := range table {
+		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
+			got := tc.i1.Intersects(tc.i2)
+			if got != tc.e {
+				if tc.e {
+					t.Errorf("expected i1 to intersect i2: i1 %+v, i2 %+v, %t", tc.i1, tc.i2, got)
+				} else {
+					t.Errorf("expected i1 to not intersect i2: i1 %+v, i2 %+v, %t", tc.i1, tc.i2, got)
+				}
+			}
+		})
+	}
 }

@@ -12,11 +12,10 @@
 //   - a set coalesces adjacent intervals: adding [0,5) and [5,10) to a set
 //     leaves it holding [0,10).
 //
-// Overlaps is the one operation that does not follow from this. It reports
-// adjacent intervals as overlapping, which is what lets a set coalesce them, so
-// two adjacent intervals overlap while their intersection is empty.
-// IntervalSet.Overlaps reports the intersections themselves and therefore
-// leaves adjacent intervals out.
+// Two predicates tell intervals apart at their limits: Intersects reports
+// whether they share a value, while Touches also accepts intervals that merely
+// meet at a limit, which is what lets a set coalesce them. Adjacent intervals
+// therefore touch without intersecting.
 package intervalset
 
 import (
@@ -44,8 +43,12 @@ type Interval[T any] interface {
 	// Contains reports whether the interval contains the given interval.
 	Contains(Interval[T]) bool
 
-	// Overlaps reports whether the interval overlaps the given interval.
-	Overlaps(Interval[T]) bool
+	// Intersects reports whether the interval shares a value with the given interval.
+	Intersects(Interval[T]) bool
+
+	// Touches reports whether the interval shares a value with the given
+	// interval or meets it at a limit.
+	Touches(Interval[T]) bool
 
 	// Intersect returns a new interval representing the intersection of both intervals.
 	Intersect(Interval[T]) Interval[T]

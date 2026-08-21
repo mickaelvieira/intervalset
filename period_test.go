@@ -253,7 +253,7 @@ func TestPeriod_After(t *testing.T) {
 	}
 }
 
-func TestPeriod_Overlap(t *testing.T) {
+func TestPeriod_Touches(t *testing.T) {
 	var table = []struct {
 		e bool
 		i []time.Time
@@ -355,12 +355,12 @@ func TestPeriod_Overlap(t *testing.T) {
 				end:   tc.i[3],
 			}
 
-			got := t1.Overlaps(t2)
+			got := t1.Touches(t2)
 			if got != tc.e {
 				if tc.e {
-					t.Errorf("expected t1 to overlap t2: t1 %+v, t2 %+v, %t", t1, t2, got)
+					t.Errorf("expected t1 to touch t2: t1 %+v, t2 %+v, %t", t1, t2, got)
 				} else {
-					t.Errorf("expected t1 to not overlap t2: t1 %+v, t2 %+v, %t", t1, t2, got)
+					t.Errorf("expected t1 to not touch t2: t1 %+v, t2 %+v, %t", t1, t2, got)
 				}
 			}
 		})
@@ -954,5 +954,119 @@ func TestPeriod_IntersectEmptyPeriod(t *testing.T) {
 
 	if got := p1.Intersect(p2); !expected.Equal(got) {
 		t.Errorf("both periods should be equal, expected %v, got %v", expected, got)
+	}
+}
+
+func TestPeriod_Intersects(t *testing.T) {
+	var table = []struct {
+		e bool
+		i []time.Time
+	}{
+		/*----------------------------------------------
+		|  T  | 1   2   3   4   5   6   7   8   9   10 |
+		| (1) |     |-------|                          |
+		| (2) |                 |---|                  |
+		----------------------------------------------*/
+		{
+			false,
+			[]time.Time{
+				time.Date(2023, time.December, 2, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 3, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
+			},
+		},
+		/*----------------------------------------------
+		|  T  | 1   2   3   4   5   6   7   8   9   10 |
+		| (1) |         |-------|                      |
+		| (2) |                 |---|                  |
+		----------------------------------------------*/
+		{
+			false, // adjacent: they touch but share no instant
+			[]time.Time{
+				time.Date(2023, time.December, 3, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
+			},
+		},
+		/*----------------------------------------------
+		|  T  | 1   2   3   4   5   6   7   8   9   10 |
+		| (1) |             |-------|                  |
+		| (2) |                 |---|                  |
+		----------------------------------------------*/
+		{
+			true,
+			[]time.Time{
+				time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
+			},
+		},
+		/*----------------------------------------------
+		|  T  | 1   2   3   4   5   6   7   8   9   10 |
+		| (1) |                 |-------|              |
+		| (2) |                 |---|                  |
+		----------------------------------------------*/
+		{
+			true,
+			[]time.Time{
+				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 7, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
+			},
+		},
+		/*----------------------------------------------
+		|  T  | 1   2   3   4   5   6   7   8   9   10 |
+		| (1) |                     |-------|          |
+		| (2) |                 |---|                  |
+		----------------------------------------------*/
+		{
+			false, // adjacent: they touch but share no instant
+			[]time.Time{
+				time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 8, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
+			},
+		},
+		/*----------------------------------------------
+		|  T  | 1   2   3   4   5   6   7   8   9   10 |
+		| (1) |                         |-------|      |
+		| (2) |                 |---|                  |
+		----------------------------------------------*/
+		{
+			false,
+			[]time.Time{
+				time.Date(2023, time.December, 7, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 9, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
+			},
+		},
+	}
+
+	for i, tc := range table {
+		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
+			t1 := Period[time.Time]{
+				start: tc.i[0],
+				end:   tc.i[1],
+			}
+			t2 := Period[time.Time]{
+				start: tc.i[2],
+				end:   tc.i[3],
+			}
+
+			got := t1.Intersects(t2)
+			if got != tc.e {
+				if tc.e {
+					t.Errorf("expected t1 to intersect t2: t1 %+v, t2 %+v, %t", t1, t2, got)
+				} else {
+					t.Errorf("expected t1 to not intersect t2: t1 %+v, t2 %+v, %t", t1, t2, got)
+				}
+			}
+		})
 	}
 }
