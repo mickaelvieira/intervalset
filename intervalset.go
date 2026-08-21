@@ -40,6 +40,10 @@ type Interval[T any] interface {
 	// IsEmpty reports whether the interval's limits are equal,
 	// meaning the interval covers nothing.
 	IsEmpty() bool
+
+	// IsValid reports whether the interval's lower limit is
+	// lower than or equal to its upper limit.
+	IsValid() bool
 }
 
 // EmptySet returns an empty set.
@@ -87,10 +91,11 @@ func (p *IntervalSet[T]) Add(intervals ...Interval[T]) *IntervalSet[T] {
 }
 
 func (p *IntervalSet[T]) add(q Interval[T]) {
-	// an empty interval covers nothing, adding it to the set is a no-op.
-	// keeping empty intervals out of the set also guarantees that the
-	// intervals we encompass below always produce a non-zero interval.
-	if q.IsEmpty() {
+	// an invalid interval would break the set's ordering and an empty interval
+	// covers nothing, so adding either of them to the set is a no-op.
+	// keeping them out of the set also guarantees that the intervals we
+	// encompass below always produce a non-zero interval.
+	if !q.IsValid() || q.IsEmpty() {
 		return
 	}
 
@@ -320,6 +325,12 @@ func (p *IntervalSet[T]) IterBetween(q Interval[T], f func(Interval[T]) bool) {
 // | Q |    ---------------------
 // |   |
 func (p *IntervalSet[T]) rangeOfOverlap(q Interval[T]) (int, int) {
+	// an invalid interval overlaps nothing: its limits being out of order,
+	// the lower limit would otherwise be searched past the higher one.
+	if !q.IsValid() {
+		return 0, 0
+	}
+
 	l := sort.Search(len(p.intervals), func(i int) bool {
 		return !p.intervals[i].Before(q)
 	})

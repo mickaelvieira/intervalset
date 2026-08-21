@@ -1916,3 +1916,25 @@ func TestPeriodSet_AddEmptyPeriodIsNoop(t *testing.T) {
 		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
 	}
 }
+
+func TestPeriodSet_AddInvalidPeriodIsNoop(t *testing.T) {
+	/*----------------------------------------------
+	|  T  | 1   2   3   4   5   6   7   8   9   10 |
+	| (+) |     |<--------------|                  |
+	------------------------------------------------
+	|  R  |                 ∅                      |
+	----------------------------------------------*/
+	set := EmptySet[time.Time]().
+		Add(
+			NewPeriod(
+				time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 2, 0, 0, 0, 0, time.UTC),
+			),
+		)
+
+	expected := genExpectedPeriodSet(nil)
+
+	if !set.Equal(expected) {
+		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
+	}
+}
