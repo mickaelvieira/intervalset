@@ -657,7 +657,7 @@ func BenchmarkOverlaps(b *testing.B) {
 func TestPeriodSet_Overlaps(t *testing.T) {
 	var table = []struct {
 		e *IntervalSet[time.Time]
-		p Period[time.Time]
+		p Period
 		s *IntervalSet[time.Time]
 	}{
 		/*-------------------------------------------------------------
@@ -935,7 +935,7 @@ func ExampleIntervalSet_Overlaps_period() {
 func TestPeriodSet_Complement(t *testing.T) {
 	var table = []struct {
 		e *IntervalSet[time.Time]
-		p Period[time.Time]
+		p Period
 		s *IntervalSet[time.Time]
 	}{
 		/*-------------------------------------------------------------

@@ -6,8 +6,11 @@ import (
 	"time"
 )
 
+// Period implements the interval interface for time values.
+var _ Interval[time.Time] = Period{}
+
 func TestPeriod_IsEmpty(t *testing.T) {
-	t1 := Period[time.Time]{
+	t1 := Period{
 		start: time.Date(2023, time.December, 10, 12, 50, 0, 0, time.UTC),
 		end:   time.Date(2023, time.December, 10, 12, 50, 0, 0, time.UTC),
 	}
@@ -16,7 +19,7 @@ func TestPeriod_IsEmpty(t *testing.T) {
 		t.Errorf("period should be empty %+v", t1)
 	}
 
-	t2 := Period[time.Time]{
+	t2 := Period{
 		start: time.Date(2023, time.December, 10, 12, 50, 0, 0, time.UTC),
 		end:   time.Date(2023, time.December, 10, 12, 50, 1, 0, time.UTC),
 	}
@@ -27,7 +30,7 @@ func TestPeriod_IsEmpty(t *testing.T) {
 }
 
 func TestPeriod_IsValid(t *testing.T) {
-	t1 := Period[time.Time]{
+	t1 := Period{
 		start: time.Date(2023, time.December, 10, 12, 50, 0, 0, time.UTC),
 		end:   time.Date(2023, time.December, 10, 12, 50, 0, 0, time.UTC),
 	}
@@ -36,7 +39,7 @@ func TestPeriod_IsValid(t *testing.T) {
 		t.Errorf("period should be valid %+v", t1)
 	}
 
-	t2 := Period[time.Time]{
+	t2 := Period{
 		start: time.Date(2023, time.December, 10, 12, 50, 0, 0, time.UTC),
 		end:   time.Date(2023, time.December, 10, 12, 50, 1, 0, time.UTC),
 	}
@@ -45,7 +48,7 @@ func TestPeriod_IsValid(t *testing.T) {
 		t.Errorf("period should be valid %+v", t2)
 	}
 
-	t3 := Period[time.Time]{
+	t3 := Period{
 		start: time.Date(2023, time.December, 10, 12, 50, 1, 0, time.UTC),
 		end:   time.Date(2023, time.December, 10, 12, 50, 0, 0, time.UTC),
 	}
@@ -91,11 +94,11 @@ func TestPeriod_Equal(t *testing.T) {
 
 	for i, tc := range table {
 		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
-			t1 := Period[time.Time]{
+			t1 := Period{
 				start: tc.i[0],
 				end:   tc.i[1],
 			}
-			t2 := Period[time.Time]{
+			t2 := Period{
 				start: tc.i[2],
 				end:   tc.i[3],
 			}
@@ -162,11 +165,11 @@ func TestPeriod_Before(t *testing.T) {
 
 	for i, tc := range table {
 		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
-			t1 := Period[time.Time]{
+			t1 := Period{
 				start: tc.i[0],
 				end:   tc.i[1],
 			}
-			t2 := Period[time.Time]{
+			t2 := Period{
 				start: tc.i[2],
 				end:   tc.i[3],
 			}
@@ -233,11 +236,11 @@ func TestPeriod_After(t *testing.T) {
 
 	for i, tc := range table {
 		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
-			t1 := Period[time.Time]{
+			t1 := Period{
 				start: tc.i[0],
 				end:   tc.i[1],
 			}
-			t2 := Period[time.Time]{
+			t2 := Period{
 				start: tc.i[2],
 				end:   tc.i[3],
 			}
@@ -346,11 +349,11 @@ func TestPeriod_Touches(t *testing.T) {
 
 	for i, tc := range table {
 		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
-			t1 := Period[time.Time]{
+			t1 := Period{
 				start: tc.i[0],
 				end:   tc.i[1],
 			}
-			t2 := Period[time.Time]{
+			t2 := Period{
 				start: tc.i[2],
 				end:   tc.i[3],
 			}
@@ -488,11 +491,11 @@ func TestPeriod_Contains(t *testing.T) {
 
 	for i, tc := range table {
 		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
-			t1 := Period[time.Time]{
+			t1 := Period{
 				start: tc.i[0],
 				end:   tc.i[1],
 			}
-			t2 := Period[time.Time]{
+			t2 := Period{
 				start: tc.i[2],
 				end:   tc.i[3],
 			}
@@ -510,9 +513,9 @@ func TestPeriod_Contains(t *testing.T) {
 
 func TestPeriod_Intersect(t *testing.T) {
 	var table = []struct {
-		p1 Period[time.Time]
-		p2 Period[time.Time]
-		e  Period[time.Time]
+		p1 Period
+		p2 Period
+		e  Period
 	}{
 		/*----------------------------------------------
 		|  T  | 1   2   3   4   5   6   7   8   9   10 |
@@ -530,7 +533,7 @@ func TestPeriod_Intersect(t *testing.T) {
 				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
 				time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
 			),
-			Period[time.Time]{},
+			Period{},
 		},
 		/*----------------------------------------------
 		|  T  | 1   2   3   4   5   6   7   8   9   10 |
@@ -548,7 +551,7 @@ func TestPeriod_Intersect(t *testing.T) {
 				time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
 				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
 			),
-			Period[time.Time]{
+			Period{
 				start: time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
 				end:   time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
 			},
@@ -569,7 +572,7 @@ func TestPeriod_Intersect(t *testing.T) {
 				time.Date(2023, time.December, 2, 0, 0, 0, 0, time.UTC),
 				time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
 			),
-			Period[time.Time]{
+			Period{
 				start: time.Date(2023, time.December, 3, 0, 0, 0, 0, time.UTC),
 				end:   time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
 			},
@@ -590,7 +593,7 @@ func TestPeriod_Intersect(t *testing.T) {
 				time.Date(2023, time.December, 3, 0, 0, 0, 0, time.UTC),
 				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
 			),
-			Period[time.Time]{
+			Period{
 				start: time.Date(2023, time.December, 3, 0, 0, 0, 0, time.UTC),
 				end:   time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
 			},
@@ -611,7 +614,7 @@ func TestPeriod_Intersect(t *testing.T) {
 				time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
 				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
 			),
-			Period[time.Time]{},
+			Period{},
 		},
 	}
 
@@ -647,10 +650,10 @@ func ExamplePeriod_Intersect() {
 
 func TestPeriod_Punch(t *testing.T) {
 	var table = []struct {
-		p1 Period[time.Time]
-		p2 Period[time.Time]
-		e1 Period[time.Time]
-		e2 Period[time.Time]
+		p1 Period
+		p2 Period
+		e1 Period
+		e2 Period
 	}{
 		/*----------------------------------------------
 		|  T  | 1   2   3   4   5   6   7   8   9   10 |
@@ -668,11 +671,11 @@ func TestPeriod_Punch(t *testing.T) {
 				time.Date(2023, time.December, 3, 0, 0, 0, 0, time.UTC),
 				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
 			),
-			Period[time.Time]{
+			Period{
 				start: time.Date(2023, time.December, 2, 0, 0, 0, 0, time.UTC),
 				end:   time.Date(2023, time.December, 3, 0, 0, 0, 0, time.UTC),
 			},
-			Period[time.Time]{
+			Period{
 				start: time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
 				end:   time.Date(2023, time.December, 7, 0, 0, 0, 0, time.UTC),
 			},
@@ -693,11 +696,11 @@ func TestPeriod_Punch(t *testing.T) {
 				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
 				time.Date(2023, time.December, 7, 0, 0, 0, 0, time.UTC),
 			),
-			Period[time.Time]{
+			Period{
 				start: time.Date(2023, time.December, 2, 0, 0, 0, 0, time.UTC),
 				end:   time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
 			},
-			Period[time.Time]{},
+			Period{},
 		},
 		/*----------------------------------------------
 		|  T  | 1   2   3   4   5   6   7   8   9   10 |
@@ -715,8 +718,8 @@ func TestPeriod_Punch(t *testing.T) {
 				time.Date(2023, time.December, 2, 0, 0, 0, 0, time.UTC),
 				time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
 			),
-			Period[time.Time]{},
-			Period[time.Time]{
+			Period{},
+			Period{
 				start: time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
 				end:   time.Date(2023, time.December, 7, 0, 0, 0, 0, time.UTC),
 			},
@@ -738,8 +741,8 @@ func TestPeriod_Punch(t *testing.T) {
 				time.Date(2023, time.December, 2, 0, 0, 0, 0, time.UTC),
 				time.Date(2023, time.December, 7, 0, 0, 0, 0, time.UTC),
 			),
-			Period[time.Time]{},
-			Period[time.Time]{},
+			Period{},
+			Period{},
 		},
 	}
 
@@ -781,9 +784,9 @@ func ExamplePeriod_Punch() {
 
 func TestPeriod_Encompass(t *testing.T) {
 	var table = []struct {
-		p1 Period[time.Time]
-		p2 Period[time.Time]
-		e  Period[time.Time]
+		p1 Period
+		p2 Period
+		e  Period
 	}{
 		/*----------------------------------------------
 		|  T  | 1   2   3   4   5   6   7   8   9   10 |
@@ -801,7 +804,7 @@ func TestPeriod_Encompass(t *testing.T) {
 				time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
 				time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
 			),
-			Period[time.Time]{},
+			Period{},
 		},
 		/*----------------------------------------------
 		|  T  | 1   2   3   4   5   6   7   8   9   10 |
@@ -882,7 +885,7 @@ func TestPeriod_Encompass(t *testing.T) {
 				time.Date(2023, time.December, 4, 0, 0, 0, 0, time.UTC),
 				time.Date(2023, time.December, 6, 0, 0, 0, 0, time.UTC),
 			),
-			Period[time.Time]{},
+			Period{},
 		},
 		/*----------------------------------------------
 		|  T  | 1   2   3   4   5   6   7   8   9   10 |
@@ -900,7 +903,7 @@ func TestPeriod_Encompass(t *testing.T) {
 				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
 				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
 			),
-			Period[time.Time]{},
+			Period{},
 		},
 	}
 
@@ -950,7 +953,7 @@ func TestPeriod_IntersectEmptyPeriod(t *testing.T) {
 		time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
 	)
 
-	expected := Period[time.Time]{}
+	expected := Period{}
 
 	if got := p1.Intersect(p2); !expected.Equal(got) {
 		t.Errorf("both periods should be equal, expected %v, got %v", expected, got)
@@ -1050,11 +1053,11 @@ func TestPeriod_Intersects(t *testing.T) {
 
 	for i, tc := range table {
 		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
-			t1 := Period[time.Time]{
+			t1 := Period{
 				start: tc.i[0],
 				end:   tc.i[1],
 			}
-			t2 := Period[time.Time]{
+			t2 := Period{
 				start: tc.i[2],
 				end:   tc.i[3],
 			}
