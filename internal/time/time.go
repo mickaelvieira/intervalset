@@ -1,3 +1,4 @@
+// Package time compares the time values the periods are made of.
 package time
 
 import stdtime "time"

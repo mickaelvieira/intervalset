@@ -124,7 +124,7 @@ func (p Period) Encompass(q Interval[time.Time]) Interval[time.Time] {
 }
 
 // Punch cuts q out of p and returns the remaining periods.
-func (p Period) Punch(q Interval[time.Time]) (Interval[time.Time], Interval[time.Time]) {
+func (p Period) Punch(q Interval[time.Time]) (left, right Interval[time.Time]) {
 	i := p.Intersect(q)
 	if i.IsZero() {
 		if p.Before(q) {
@@ -133,16 +133,16 @@ func (p Period) Punch(q Interval[time.Time]) (Interval[time.Time], Interval[time
 		return Period{}, p
 	}
 
-	l := Period{}
-	r := Period{}
+	left = Period{}
+	right = Period{}
 
 	if !p.start.Equal(i.Min()) {
-		l = Period{start: p.start, end: i.Min()}
+		left = Period{start: p.start, end: i.Min()}
 	}
 
 	if !i.Max().Equal(p.end) {
-		r = Period{start: i.Max(), end: p.end}
+		right = Period{start: i.Max(), end: p.end}
 	}
 
-	return l, r
+	return left, right
 }
