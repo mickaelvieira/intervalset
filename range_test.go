@@ -735,3 +735,27 @@ func TestRange_Intersects(t *testing.T) {
 		})
 	}
 }
+
+// Named types with a numeric underlying type.
+type celsius float64
+type port uint16
+
+// Number must admit every numeric type, named ones included. Instantiating each
+// of them keeps the constraint from silently narrowing.
+var (
+	_ = NewRange[int](0, 1)
+	_ = NewRange[int8](0, 1)
+	_ = NewRange[int16](0, 1)
+	_ = NewRange[int32](0, 1)
+	_ = NewRange[int64](0, 1)
+	_ = NewRange[uint](0, 1)
+	_ = NewRange[uint8](0, 1)
+	_ = NewRange[uint16](0, 1)
+	_ = NewRange[uint32](0, 1)
+	_ = NewRange[uint64](0, 1)
+	_ = NewRange[uintptr](0, 1)
+	_ = NewRange[float32](0, 1)
+	_ = NewRange[float64](0, 1)
+	_ = NewRange[celsius](0, 1)
+	_ = NewRange[port](0, 1)
+)
