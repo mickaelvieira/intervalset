@@ -639,3 +639,17 @@ func ExampleRange_Encompass() {
 	// Output:
 	// 3 - 6
 }
+
+// Adjacent ranges meet at a single value and share none: they overlap, which is
+// what lets a set coalesce them, yet their intersection is empty.
+func ExampleRange_Overlaps_adjacent() {
+	a := NewRange[int](0, 5)
+	b := NewRange[int](5, 10)
+
+	fmt.Printf("overlaps: %t\n", a.Overlaps(b))
+	fmt.Printf("intersection is empty: %t\n", a.Intersect(b).IsZero())
+
+	// Output:
+	// overlaps: true
+	// intersection is empty: true
+}

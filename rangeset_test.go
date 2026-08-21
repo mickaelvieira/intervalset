@@ -1367,3 +1367,41 @@ func TestRangeSet_IsSupersetOfOrientation(t *testing.T) {
 		t.Errorf("the narrower set should not be a superset of the wider one, got true")
 	}
 }
+
+// A range covers its lower value but stops short of its upper one,
+// so adjacent ranges are merged into a single one.
+func ExampleIntervalSet_Add_adjacent() {
+	set := EmptySet[int]().
+		Add(
+			NewRange[int](0, 5),
+			NewRange[int](5, 10),
+		)
+
+	for _, r := range set.AsSlice() {
+		fmt.Printf("%d - %d\n", r.Min(), r.Max())
+	}
+
+	// Output:
+	// 0 - 10
+}
+
+// Subtracting a range splits the remaining ones at its boundaries without
+// losing or duplicating a single value, so adding it back restores the range.
+func ExampleIntervalSet_Sub_boundaries() {
+	set := EmptySet[int]().Add(NewRange[int](0, 10))
+
+	set.Sub(NewRange[int](3, 7))
+	for _, r := range set.AsSlice() {
+		fmt.Printf("%d - %d\n", r.Min(), r.Max())
+	}
+
+	set.Add(NewRange[int](3, 7))
+	for _, r := range set.AsSlice() {
+		fmt.Printf("after adding it back: %d - %d\n", r.Min(), r.Max())
+	}
+
+	// Output:
+	// 0 - 3
+	// 7 - 10
+	// after adding it back: 0 - 10
+}

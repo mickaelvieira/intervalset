@@ -1,3 +1,22 @@
+// Package intervalset provides operations on sets of intervals, either ranges
+// of numbers or periods of time.
+//
+// Intervals are half-open: an interval covers its lower limit but stops short
+// of its upper one, so [0,5) and [5,10) share no value. It follows that:
+//
+//   - an interval whose limits are equal is empty and covers nothing. A set
+//     ignores empty intervals, as it ignores invalid ones whose limits are out
+//     of order;
+//   - subtracting an interval splits the remaining ones at its limits without
+//     losing or duplicating a single value;
+//   - a set coalesces adjacent intervals: adding [0,5) and [5,10) to a set
+//     leaves it holding [0,10).
+//
+// Overlaps is the one operation that does not follow from this. It reports
+// adjacent intervals as overlapping, which is what lets a set coalesce them, so
+// two adjacent intervals overlap while their intersection is empty.
+// IntervalSet.Overlaps reports the intersections themselves and therefore
+// leaves adjacent intervals out.
 package intervalset
 
 import (
