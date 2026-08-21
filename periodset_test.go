@@ -1889,3 +1889,30 @@ func TestPeriodSet_IterBetween(t *testing.T) {
 		t.Errorf("expected both sets to be equal, s3 %+v, e3 %+v", s3, e3)
 	}
 }
+
+func TestPeriodSet_AddEmptyPeriodIsNoop(t *testing.T) {
+	/*----------------------------------------------
+	|  T  | 1   2   3   4   5   6   7   8   9   10 |
+	| (+) |                 |                      |
+	| (+) |                 |                      |
+	------------------------------------------------
+	|  R  |                 ∅                      |
+	----------------------------------------------*/
+	set := EmptySet[time.Time]().
+		Add(
+			NewPeriod(
+				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+			),
+			NewPeriod(
+				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.December, 5, 0, 0, 0, 0, time.UTC),
+			),
+		)
+
+	expected := genExpectedPeriodSet(nil)
+
+	if !set.Equal(expected) {
+		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
+	}
+}

@@ -1138,3 +1138,52 @@ func TestRangeSet_IterBetween(t *testing.T) {
 		t.Errorf("expected both sets to be equal, s3 %+v, e3 %+v", s3, e3)
 	}
 }
+
+func TestRangeSet_AddEmptyRangeIsNoop(t *testing.T) {
+	/*----------------------------------------------
+	|  T  | 1   2   3   4   5   6   7   8   9   10 |
+	| (+) |                 |                      |
+	| (+) |                 |                      |
+	------------------------------------------------
+	|  R  |                 ∅                      |
+	----------------------------------------------*/
+	set := EmptySet[int]().
+		Add(
+			NewRange[int](5, 5),
+			NewRange[int](5, 5),
+		)
+
+	expected := genExpectedRangeSet(nil)
+
+	if !set.Equal(expected) {
+		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
+	}
+}
+
+func TestRangeSet_AddEmptyRangeLeavesSetUntouched(t *testing.T) {
+	/*----------------------------------------------
+	|  T  | 1   2   3   4   5   6   7   8   9   10 |
+	| (+) |     |---|                              |
+	| (+) |                 |                      |
+	| (+) |                         |---|          |
+	| (+) | |                                      |
+	------------------------------------------------
+	|  R  |     |---|               |---|          |
+	----------------------------------------------*/
+	set := EmptySet[int]().
+		Add(
+			NewRange[int](2, 3),
+			NewRange[int](5, 5),
+			NewRange[int](7, 8),
+			NewRange[int](0, 0),
+		)
+
+	expected := genExpectedRangeSet([]Interval[int]{
+		NewRange[int](2, 3),
+		NewRange[int](7, 8),
+	})
+
+	if !set.Equal(expected) {
+		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
+	}
+}
