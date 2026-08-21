@@ -36,6 +36,10 @@ type Interval[T any] interface {
 
 	// IsZero reports whether both limits are zero values
 	IsZero() bool
+
+	// IsEmpty reports whether the interval's limits are equal,
+	// meaning the interval covers nothing.
+	IsEmpty() bool
 }
 
 // EmptySet returns an empty set.
@@ -83,6 +87,13 @@ func (p *IntervalSet[T]) Add(intervals ...Interval[T]) *IntervalSet[T] {
 }
 
 func (p *IntervalSet[T]) add(q Interval[T]) {
+	// an empty interval covers nothing, adding it to the set is a no-op.
+	// keeping empty intervals out of the set also guarantees that the
+	// intervals we encompass below always produce a non-zero interval.
+	if q.IsEmpty() {
+		return
+	}
+
 	// the set is empty we can simply append the interval to the set.
 	if p.IsEmpty() {
 		p.intervals = append(p.intervals, q)
