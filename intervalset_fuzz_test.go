@@ -13,9 +13,10 @@ import (
 // They exercise Range only: add & sub are generic over T, so Period runs the
 // exact same code path.
 //
-// Intervals are always generated with a lower bound below or equal to their
-// upper bound, as Add does not validate its input yet and an inverted interval
-// breaks the set's ordering.
+// Intervals are generated with no constraint on their bounds: an empty or an
+// invalid interval covers nothing, which maskOfRange already reports as no bit
+// set, so the model needs no special case for either. The set is expected to
+// ignore both.
 
 const fuzzDomain = 24
 
@@ -67,7 +68,7 @@ func TestRangeSet_AddAndSubAgainstModel(t *testing.T) {
 
 		for o := 0; o < 6; o++ {
 			l := r.Intn(fuzzDomain)
-			u := min(l+r.Intn(4), fuzzDomain) // may be empty when l == u
+			u := min(max(l+r.Intn(7)-3, 0), fuzzDomain) // may be empty or invalid
 
 			if r.Intn(2) == 0 {
 				ops += fmt.Sprintf(" Add(%d,%d)", l, u)
@@ -93,7 +94,7 @@ func TestRangeSet_OperationsAgainstModel(t *testing.T) {
 
 		for o := 0; o < 4; o++ {
 			l := r.Intn(fuzzDomain)
-			u := min(l+r.Intn(4), fuzzDomain)
+			u := min(max(l+r.Intn(7)-3, 0), fuzzDomain)
 			set.Add(NewRange[int](l, u))
 			m |= maskOfRange(l, u)
 		}
@@ -112,7 +113,7 @@ func TestRangeSet_OperationsAgainstModel(t *testing.T) {
 		assertSetHolds(t, p.Difference(q), mp&^mq, "Difference")
 
 		l := r.Intn(fuzzDomain)
-		u := min(l+r.Intn(8), fuzzDomain)
+		u := min(max(l+r.Intn(12)-4, 0), fuzzDomain)
 		assertSetHolds(t, p.Complement(NewRange[int](l, u)), maskOfRange(l, u)&^mp, "Complement")
 	}
 }
@@ -137,7 +138,7 @@ func FuzzRangeSet_AddAndSub(f *testing.F) {
 
 		for i := 0; i+1 < len(ops); i += 2 {
 			l := int(ops[i]&0x7f) % fuzzDomain
-			u := min(l+int(ops[i+1])%5, fuzzDomain)
+			u := min(max(l+int(ops[i+1])%9-4, 0), fuzzDomain)
 
 			if ops[i]&0x80 == 0 {
 				set.Add(NewRange[int](l, u))

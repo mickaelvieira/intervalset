@@ -1269,3 +1269,52 @@ func TestRangeSet_SubDoesNotDropZeroInterval(t *testing.T) {
 		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
 	}
 }
+
+func TestRangeSet_AddInvalidRangeIsNoop(t *testing.T) {
+	/*----------------------------------------------
+	|  T  | 1   2   3   4   5   6   7   8   9   10 |
+	| (+) |             |<----------|              |
+	------------------------------------------------
+	|  R  |                 ∅                      |
+	----------------------------------------------*/
+	set := EmptySet[int]().
+		Add(
+			NewRange[int](8, 4),
+		)
+
+	expected := genExpectedRangeSet(nil)
+
+	if !set.Equal(expected) {
+		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
+	}
+}
+
+// The shortest sequence of operations reaching the panic in add: three invalid
+// ranges leave the set out of order, so encompassing the fourth one yields a
+// zero value interval.
+func TestRangeSet_AddInvalidRangeDoesNotPanic(t *testing.T) {
+	/*-------------------------------------------------
+	|  T  | -3  -2  -1   0   1   2   3   4   5   6   7 |
+	| (+) |              |<----------|                 |
+	| (+) |              |<--|                         |
+	| (+) |      |<--------------|                     |
+	| (+) |          |-------------------|             |
+	---------------------------------------------------
+	|  R  |          |-------------------|             |
+	-------------------------------------------------*/
+	set := EmptySet[int]().
+		Add(
+			NewRange[int](3, 0),
+			NewRange[int](1, -1),
+			NewRange[int](4, -3),
+			NewRange[int](-1, 4),
+		)
+
+	expected := genExpectedRangeSet([]Interval[int]{
+		NewRange[int](-1, 4),
+	})
+
+	if !set.Equal(expected) {
+		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
+	}
+}
