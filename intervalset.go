@@ -124,7 +124,7 @@ func (p *IntervalSet[T]) add(q Interval[T]) {
 
 	interval := q
 
-	for cur != nil && !cur.IsZero() {
+	for cur != nil {
 		if cur.After(interval) {
 			// we can safely append both intervals to the stack
 			stack = append(stack, interval)
@@ -195,7 +195,7 @@ func (p *IntervalSet[T]) sub(q Interval[T]) {
 	left, right := p.intervals[0:i], p.intervals[i:]
 	cur, right := right[0], right[1:]
 
-	for cur != nil && !cur.IsZero() {
+	for cur != nil {
 		// the interval is no longer overlapping the subtraction
 		// we can stop here the next ones will be after the subtraction too
 		if cur.After(q) {

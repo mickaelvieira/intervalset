@@ -1187,3 +1187,54 @@ func TestRangeSet_AddEmptyRangeLeavesSetUntouched(t *testing.T) {
 		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
 	}
 }
+
+// A zero interval can no longer enter a set through Add, but the merge loops in
+// add & sub still stop on one. Should a zero interval ever reach the set, they
+// must not silently discard it along with the interval being added or removed.
+// Both tests build the set directly since the public API rejects empty intervals.
+func TestRangeSet_AddDoesNotDropZeroInterval(t *testing.T) {
+	/*-------------------------------------------------
+	|  T  | -5  -4  -3  -2  -1   0   1   2   3   4   5 |
+	|  S  |                      |                     |
+	| (+) | |---|                                      |
+	---------------------------------------------------
+	|  R  | |---|                |                     |
+	-------------------------------------------------*/
+	set := &IntervalSet[int]{intervals: []Interval[int]{
+		NewRange[int](0, 0),
+	}}
+
+	set.Add(NewRange[int](-5, -4))
+
+	expected := genExpectedRangeSet([]Interval[int]{
+		NewRange[int](-5, -4),
+		NewRange[int](0, 0),
+	})
+
+	if !set.Equal(expected) {
+		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
+	}
+}
+
+func TestRangeSet_SubDoesNotDropZeroInterval(t *testing.T) {
+	/*-------------------------------------------------
+	|  T  | -5  -4  -3  -2  -1   0   1   2   3   4   5 |
+	|  S  |                      |                     |
+	| (-) | |---|                                      |
+	---------------------------------------------------
+	|  R  |                      |                     |
+	-------------------------------------------------*/
+	set := &IntervalSet[int]{intervals: []Interval[int]{
+		NewRange[int](0, 0),
+	}}
+
+	set.Sub(NewRange[int](-5, -4))
+
+	expected := genExpectedRangeSet([]Interval[int]{
+		NewRange[int](0, 0),
+	})
+
+	if !set.Equal(expected) {
+		t.Errorf("both sets should be equal, expected %v, got %v", expected, set.AsSlice())
+	}
+}
