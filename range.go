@@ -1,10 +1,10 @@
 package intervalset
 
-import "golang.org/x/exp/constraints"
-
 // Number represents a value in a range.
 type Number interface {
-	constraints.Float | constraints.Integer
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+		~float32 | ~float64
 }
 
 // NewRange returns a new range between lower and upper values.
